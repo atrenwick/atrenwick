@@ -1,0 +1,25 @@
+-- Herefollows an AppleScript, to be in run in Script Editor
+-- variables to customise: delays in seconds, key codes to customise keystrokes (see list here: http://apple.stackexchange.com/questions/36943/how-do-i-automate-a-key-press-in-applescript)
+-- more variables to customise: App1 and App2
+tell application "App1" to activate
+tell application "System Events"
+	repeat 27 times
+		delay 0.5
+		key code 125 using {shift down}
+		delay 0.1
+		key code 8 using {command down} -- C
+		delay 0.1
+		tell application "App2" to activate
+		delay 0.1
+		key code 9 using {command down} -- V
+		delay 0.1
+		tell application "App1" to activate
+		delay 0.1
+		key code 123
+		delay 0.25
+		key code 125
+		delay 0.4
+	end repeat
+	key code 36
+end tell
+end tell
