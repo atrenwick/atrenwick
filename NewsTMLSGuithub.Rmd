@@ -1,0 +1,351 @@
+---
+title: "NewsTLGetter"
+output: html_notebook
+editor_options: 
+  chunk_output_type: console
+---
+```{r}
+library(dplyr); library(tidyr) ; library(rtweet); library(tidytext) ; library(beepr) ## load libraries
+```
+
+## 1 NewsTLs
+## Authenticate : 
+Insert API keys here for each of api_key, api_secret, access_token, access_secret, and bearer_token, then add nape to app
+```{r}
+{ twitterapp_keylist <- list(
+  api_key = "",
+  api_secret = "",
+  access_token = "",
+  access_secret = "",
+  bearer_token = ""
+)
+  my_token1 <- create_token(
+    app = "", # the name of my app
+    consumer_key = twitterapp_keylist$api_key,
+    consumer_secret = twitterapp_keylist$api_secret,
+    access_token = twitterapp_keylist$access_token,
+    access_secret = twitterapp_keylist$access_secret
+  )
+}
+```
+
+
+
+```{r}
+TLsV2 <- read.csv("/R/NewsTLs/NewsTLsCodesV2.csv", header = T)
+TLsV2$screen_name <- gsub("@", "", TLsV2$Handle)
+thisYear <- format(Sys.Date(), "%Y")
+YesterdayMonth <- format(Sys.Date(), "%m")
+#YesterdayMonth <- as.integer(YesterdayMonth) -1
+#YesterdayMonth <-paste("0", YesterdayMonth, sep="") 
+#YesterDate <- 30
+thisDay <- as.numeric(format(Sys.Date(), "%d"))
+if ((thisDay <10)){
+  thisDay <- paste(0,thisDay, sep = "")}
+YesterDate <- as.numeric(thisDay) -1
+if ((YesterDate <10)){
+  YesterDate <- paste(0,YesterDate, sep = "")}
+YesterdayYMDString <- paste(thisYear, YesterdayMonth, YesterDate, sep="-")
+DailyPath <-  paste("/R/NewsTMLS/Archive/Dailies/", thisYear, "/", YesterdayYMDString, sep="")
+#ifelse( !dir.exists(file.path(DailyPath)),   dir.create(file.path(DailyPath)),   FALSE  )
+
+```
+
+## Get 
+```{r}
+{
+currentOutput <- data.frame()
+for (i in 1:9){
+  currentFeed <- get_timeline(TLsV2$Handle[i], n = 1000, token = my_token1)
+  currentFeed <- currentFeed[-c(1,6:10,13:90)]
+  allCurrentInfo <- right_join(currentFeed, TLsV2, by = "screen_name") %>% 
+      na.omit(text) 
+  allCurrentInfo<- allCurrentInfo[-c(7,8,10)]  
+  allCurrentInfo <- allCurrentInfo[which(allCurrentInfo$is_quote == F),] ## get rid of quotes and retweets
+  allCurrentInfo <- allCurrentInfo[which(allCurrentInfo$is_retweet == F),]
+  allCurrentInfo <- allCurrentInfo[-c(5,6)]
+  allCurrentInfo <- unique.data.frame(allCurrentInfo)
+  currentOutput <- rbind(currentOutput, allCurrentInfo)
+  cat ("Completed", i, TLsV2$Handle[i], ";", dim(allCurrentInfo)[1], "added", "total :", dim(currentOutput)[1], "\n")
+}
+{
+BE_TML <- currentOutput
+BE_TML <- separate(BE_TML, created_at, c("Date", "Time"), sep= " ")
+BE_TML <- separate(BE_TML, Date, c("YYYY", "MM", "DD"), sep= "-")
+BE_TML <- separate(BE_TML, Time, c("hh", "mm", "ss"), sep= ":")
+BE_TML <- BE_TML[which(BE_TML$YYYY == thisYear), ]
+BE_TML <- BE_TML[which(BE_TML$MM == YesterdayMonth), ]
+BE_TML <- BE_TML[which(BE_TML$DD == YesterDate), ]
+BE_TML <- unique.data.frame(BE_TML)
+write.csv(BE_TML, paste(DailyPath, "-BE_TML.csv", sep=""))
+#write.csv(BE_TML, paste("/R/NewsTMLS/", YesterdayYMDString, "-BE_TML.csv", sep=""))
+
+}
+}
+{
+currentOutput <- data.frame()
+for (i in 10:34){
+  currentFeed <- get_timeline(TLsV2$Handle[i], n = 1000, token = my_token1)
+  currentFeed <- currentFeed[-c(1,6:10,13:90)]
+  allCurrentInfo <- right_join(currentFeed, TLsV2, by = "screen_name") %>% 
+      na.omit(text) 
+  allCurrentInfo<- allCurrentInfo[-c(7,8,10)]  
+  allCurrentInfo <- allCurrentInfo[which(allCurrentInfo$is_quote == F),] ## get rid of quotes and retweets
+  allCurrentInfo <- allCurrentInfo[which(allCurrentInfo$is_retweet == F),]
+  allCurrentInfo <- allCurrentInfo[-c(5,6)]
+  allCurrentInfo <- unique.data.frame(allCurrentInfo)
+  currentOutput <- rbind(currentOutput, allCurrentInfo)
+  cat ("Completed", i,  TLsV2$Handle[i], ";", dim(allCurrentInfo)[1], "added", "total :", dim(currentOutput)[1], "\n" )
+}
+{
+CA_TML <- currentOutput
+CA_TML <- separate(CA_TML, created_at, c("Date", "Time"), sep= " ")
+CA_TML <- separate(CA_TML, Date, c("YYYY", "MM", "DD"), sep= "-")
+CA_TML <- separate(CA_TML, Time, c("hh", "mm", "ss"), sep= ":")
+CA_TML <- CA_TML[which(CA_TML$YYYY == thisYear), ]
+CA_TML <- CA_TML[which(CA_TML$MM == YesterdayMonth), ]
+CA_TML <- CA_TML[which(CA_TML$DD == YesterDate), ]
+CA_TML <- unique.data.frame(CA_TML)
+write.csv(CA_TML, paste(DailyPath, "-CA_TML.csv", sep=""))
+#write.csv(CA_TML, paste("/R/NewsTMLS/", YesterdayYMDString, "-CA_TML.csv", sep=""))
+}
+}
+{
+currentOutput <- data.frame()
+for (i in 35:53){
+  currentFeed <- get_timeline(TLsV2$Handle[i], n = 1000, token = my_token1)
+  currentFeed <- currentFeed[-c(1,6:10,13:90)]
+  allCurrentInfo <- right_join(currentFeed, TLsV2, by = "screen_name") %>% 
+    na.omit(text) 
+  allCurrentInfo<- allCurrentInfo[-c(7,8,10)]  
+  allCurrentInfo <- allCurrentInfo[which(allCurrentInfo$is_quote == F),] ## get rid of quotes and retweets
+  allCurrentInfo <- allCurrentInfo[which(allCurrentInfo$is_retweet == F),]
+  allCurrentInfo <- allCurrentInfo[-c(5,6)]
+  allCurrentInfo <- unique.data.frame(allCurrentInfo)
+  currentOutput <- rbind(currentOutput, allCurrentInfo)
+  cat ("Completed", i,  TLsV2$Handle[i], ";", dim(allCurrentInfo)[1], "added", "total :", dim(currentOutput)[1], "\n")
+}
+{
+CH_TML <- currentOutput
+CH_TML <- separate(CH_TML, created_at, c("Date", "Time"), sep= " ")
+CH_TML <- separate(CH_TML, Date, c("YYYY", "MM", "DD"), sep= "-")
+CH_TML <- separate(CH_TML, Time, c("hh", "mm", "ss"), sep= ":")
+
+CH_TML <- CH_TML[which(CH_TML$YYYY == thisYear), ]
+CH_TML <- CH_TML[which(CH_TML$MM == YesterdayMonth), ]
+CH_TML <- CH_TML[which(CH_TML$DD == YesterDate), ]
+CH_TML <- unique.data.frame(CH_TML)
+write.csv(CH_TML, paste(DailyPath, "-CH_TML.csv", sep=""))
+#write.csv(BE_TML, paste("/R/NewsTMLS/", YesterdayYMDString, "-CH_TML.csv", sep=""))
+
+
+}
+}
+{
+currentOutput <- data.frame() ## change to 54:93
+for (i in 95:105){
+  currentFeed <- get_timeline(TLsV2$Handle[95], n = 1000, token = my_token1)
+  currentFeed <- currentFeed[-c(1,6:10,13:90)]
+  allCurrentInfo <- right_join(currentFeed, TLsV2, by = "screen_name") %>% 
+    na.omit(text) 
+  allCurrentInfo<- allCurrentInfo[-c(7,8,10,10)]  
+  allCurrentInfo <- allCurrentInfo[which(allCurrentInfo$is_quote == F),] ## get rid of quotes and retweets
+  allCurrentInfo <- allCurrentInfo[which(allCurrentInfo$is_retweet == F),]
+  allCurrentInfo <- allCurrentInfo[-c(5,6)]
+  allCurrentInfo <- unique.data.frame(allCurrentInfo)
+  currentOutput <- rbind(currentOutput, allCurrentInfo)
+  cat ("Completed", i, TLsV2$Handle[i], "+", dim(allCurrentInfo)[1], "->", dim(currentOutput)[1], "\n")
+}
+}
+{## change to 95:161
+for (i in 106:161){
+currentFeed <- get_timeline(TLsV2$Handle[i], n = 1000, token = my_token1)
+currentFeed <- currentFeed[-c(1,6:10,13:90)]
+allCurrentInfo <- right_join(currentFeed, TLsV2, by = "screen_name") %>% 
+    na.omit(text) 
+  allCurrentInfo<- allCurrentInfo[-c(7,8,10)]  
+  allCurrentInfo <- allCurrentInfo[which(allCurrentInfo$is_quote == F),] ## get rid of quotes and retweets
+  allCurrentInfo <- allCurrentInfo[which(allCurrentInfo$is_retweet == F),]
+  allCurrentInfo <- allCurrentInfo[-c(5,6)]
+  allCurrentInfo <- unique.data.frame(allCurrentInfo)
+  currentOutput <- rbind(currentOutput, allCurrentInfo)
+  cat ("Completed", i,  TLsV2$Handle[i], ";", dim(allCurrentInfo)[1], "added", "total :", dim(currentOutput)[1], "\n")
+}
+}
+{
+FR_TML <- currentOutput
+FR_TML <- separate(FR_TML, created_at, c("Date", "Time"), sep= " ")
+FR_TML <- separate(FR_TML, Date, c("YYYY", "MM", "DD"), sep= "-")
+FR_TML <- separate(FR_TML, Time, c("hh", "mm", "ss"), sep= ":")
+
+FR_TML <- FR_TML[which(FR_TML$YYYY == thisYear), ]
+FR_TML <- FR_TML[which(FR_TML$MM == YesterdayMonth), ]
+FR_TML <- FR_TML[which(FR_TML$DD == YesterDate), ]
+
+FR_TML <- unique.data.frame(FR_TML)
+write.csv(FR_TML, paste(DailyPath, "-FR_TML.csv", sep=""))
+#write.csv(BE_TML, paste("/R/NewsTMLS/", YesterdayYMDString, "-FR_TML.csv", sep=""))
+
+}
+{
+currentOutput <- data.frame()
+for (i in 162:dim(TLsV2)[1]){
+currentFeed <- get_timeline(TLsV2$Handle[i], n = 1000, token = my_token1)
+currentFeed <- currentFeed[-c(1,6:10,13:90)]
+allCurrentInfo <- right_join(currentFeed, TLsV2, by = "screen_name") %>% 
+    na.omit(text) 
+allCurrentInfo<- allCurrentInfo[-c(7,8,10)]  
+allCurrentInfo <- allCurrentInfo[which(allCurrentInfo$is_quote == F),] ## get rid of quotes and retweets
+allCurrentInfo <- allCurrentInfo[which(allCurrentInfo$is_retweet == F),]
+allCurrentInfo <- allCurrentInfo[-c(5,6)]
+allCurrentInfo <- unique.data.frame(allCurrentInfo)
+currentOutput <- rbind(currentOutput, allCurrentInfo)
+cat ("Completed", i,  TLsV2$Handle[i], ";", dim(allCurrentInfo)[1], "added", "total :", dim(currentOutput)[1], "\n")
+}  
+}
+{
+LX_TML <- currentOutput
+LX_TML <- separate(LX_TML, created_at, c("Date", "Time"), sep= " ")
+LX_TML <- separate(LX_TML, Date, c("YYYY", "MM", "DD"), sep= "-")
+LX_TML <- separate(LX_TML, Time, c("hh", "mm", "ss"), sep= ":")
+
+LX_TML <- LX_TML[which(LX_TML$YYYY == thisYear), ]
+LX_TML <- LX_TML[which(LX_TML$MM == YesterdayMonth), ]
+LX_TML <- LX_TML[which(LX_TML$DD == YesterDate), ]
+LX_TML <- unique.data.frame(LX_TML)
+
+#write.csv(BE_TML, paste("/R/NewsTMLS/", YesterdayYMDString, "-LX_TML.csv", sep=""))
+write.csv(LX_TML, paste(DailyPath, "-LX_TML.csv", sep=""))
+}
+
+outputPathLevel1 <- paste("/R/NewsTMLS/IndividualsN/", thisYear, "/", sep="")
+#outputPathLevel1 <- paste("/R/NewsTMLS/Archive/IndividualsN/", thisYear, "/", sep="")
+outputPathLevel2 <- paste(outputPathLevel1, thisYear,  "-", YesterdayMonth, "/", sep="")
+outputPathLevel3 <- paste(outputPathLevel2, thisYear,  "-", YesterdayMonth, "-", YesterDate, "/", sep="")
+ifelse( !dir.exists(file.path(outputPathLevel1)),   dir.create(file.path(outputPathLevel1)),   FALSE  )
+ifelse( !dir.exists(file.path(outputPathLevel2)),   dir.create(file.path(outputPathLevel2)),   FALSE  )
+ifelse( !dir.exists(file.path(outputPathLevel3)),   dir.create(file.path(outputPathLevel3)),   FALSE  )
+
+currentSelection <- rbind(BE_TML, CA_TML, CH_TML, FR_TML, LX_TML)
+currentSelection$text <- gsub("http.+", "", currentSelection$text)
+currentSelection$text <- gsub("#.+? ", "", currentSelection$text)
+currentSelection$text <- gsub("@.+? ", "", currentSelection$text)
+currentSelection$text <-   gsub("\'|’", "\' ", currentSelection$text) ## space elisions
+currentSelection$text <-   gsub("  ", " ", currentSelection$text) ## remove double spaces
+currentSelection$text <-   gsub("_", "", currentSelection$text) ## remove double spaces
+currentSelection$text <-   gsub("-|–", "-", currentSelection$text) ## remove double spaces
+currentSelection$text <-   gsub("[\"“‘«]", "\"", currentSelection$text) # reokace opening quote variations with std double "
+currentSelection$text <-   gsub("[”’»]", "\"", currentSelection$text) # idem for closing
+currentSelection$text <- gsub("[0-9]+", "", currentSelection$text)
+currentSelection$text <- gsub(",", "", currentSelection$text)
+currentSelection$text <- gsub("\\.", "", currentSelection$text)
+currentSelection$text <- gsub("tco.*ing.", "", currentSelection$text)
+
+for (i in 1:dim(currentSelection)[1]){
+currentTweetContent <- currentSelection$text[i]
+currrentTweetID <- currentSelection$status_id[i]
+FullName <- paste(outputPathLevel3, currrentTweetID, ".txt", sep="")
+writeChar(currentTweetContent, FullName)
+}
+beep(2)
+targetMM <- "09"
+```
+
+ ```{r}
+# write.csv(FR_TML, paste(DailyPath, "-FR_TML.csv", sep=""))
+# write.csv(BE_TML, paste(DailyPath, "BE_TML.csv", sep=""))
+# write.csv(CA_TML, paste(DailyPath, "-CA_TML.csv", sep=""))
+# write.csv(CH_TML, paste(DailyPath, "-CH_TML.csv", sep=""))
+# write.csv(LX_TML, paste(DailyPath, "-LX_TML.csv", sep=""))
+# 
+# writeChar (as.character(FR_TML), paste("R/NewsTMLS/A", YesterdayYMDString, "-FR_TML.csv", sep=""))
+# 
+# write.csv(BE_TML, paste("/R/NewsTMLS/A", YesterdayYMDString, "-BE_TML.csv", sep=""))
+# 
+# write.csv(CA_TML, paste("/R/NewsTMLS/A", YesterdayYMDString, "-CA_TML.csv", sep=""))
+# 
+# write.csv(CH_TML, paste("/R/NewsTMLS/A", YesterdayYMDString, "-CH_TML.csv", sep=""))
+# 
+# write.csv(LX_TML, paste("/R/NewsTMLS/A", YesterdayYMDString, "-LX_TML.csv", sep=""))
+
+```
+
+
+## ERROR RECOVERY - LOAD FROM DAILY csv
+
+
+## Get 
+```{r}
+
+# ArchivePath <- "R/NewsTMLS/Archive/Dailies/"
+# TargetYYYY <- "2021"
+# TargetMM <- "08"
+# TargetDD <- "11"
+# ######## note need to check number of columns in archive (1,9 potentially)
+# currentOutputBE <- read.csv(paste(ArchivePath, "/", TargetYYYY, "/", TargetYYYY, "-", TargetMM, "-", TargetDD, "-BE_TML.csv", sep="" ), colClasses = c("status_id" = "character"))
+# currentOutputBE <- currentOutputBE[-c(1,9)]
+# 
+# currentOutputCA <- read.csv(paste(ArchivePath, "/", TargetYYYY, "/", TargetYYYY, "-", TargetMM, "-", TargetDD, "-CA_TML.csv", sep="" ), colClasses = c("status_id" = "character"))
+# currentOutputCA <- currentOutputCA[-c(1)]
+# 
+# currentOutputCH <- read.csv(paste(ArchivePath, "/", TargetYYYY, "/", TargetYYYY, "-", TargetMM, "-", TargetDD, "-CH_TML.csv", sep="" ), colClasses = c("status_id" = "character"))
+# currentOutputCH <- currentOutputCH[-c(1)]
+#   
+# currentOutputFR <- read.csv(paste(ArchivePath, "/", TargetYYYY, "/", TargetYYYY, "-", TargetMM, "-", TargetDD, "-FR_TML.csv", sep="" ), colClasses = c("status_id" = "character"))
+# currentOutputFR <- currentOutputFR[-c(1)]
+# 
+# currentOutputLX <- read.csv(paste(ArchivePath, "/", TargetYYYY, "/", TargetYYYY, "-", TargetMM, "-", TargetDD, "-LX_TML.csv", sep="" ), colClasses = c("status_id" = "character"))
+# currentOutputLX <- currentOutputLX[-c(1)]
+# 
+# 
+# {
+# # Filtering formula uf needed
+# # currentOutputLX <- currentOutputLX
+# # currentOutputLX <- currentOutputLX[which(currentOutputLX$Pays == "LX"), ]
+# # 
+# }
+# 
+# outputPathLevel1 <- paste("/R/NewsTMLS/Archive/IndividualsN/", TargetYYYY, "/", sep="")
+# outputPathLevel2 <- paste(outputPathLevel1, TargetYYYY,  "-", TargetMM, "/", sep="")
+# outputPathLevel3 <- paste(outputPathLevel2, TargetYYYY,  "-", TargetMM, "-", TargetDD, "/", sep="")
+# ifelse( !dir.exists(file.path(outputPathLevel1)),   dir.create(file.path(outputPathLevel1)),   FALSE  )
+# ifelse( !dir.exists(file.path(outputPathLevel2)),   dir.create(file.path(outputPathLevel2)),   FALSE  )
+# ifelse( !dir.exists(file.path(outputPathLevel3)),   dir.create(file.path(outputPathLevel3)),   FALSE  )
+# 
+# currentSelection <- rbind(currentOutputBE, currentOutputCA, currentOutputCH, currentOutputFR, currentOutputLX)
+# currentSelection$text <- gsub("http.+", "", currentSelection$text)
+# currentSelection$text <- gsub("#.+? ", "", currentSelection$text)
+# currentSelection$text <- gsub("@.+? ", "", currentSelection$text)
+# currentSelection$text <-   gsub("\'|’", "\' ", currentSelection$text) ## space elisions
+# currentSelection$text <-   gsub("  ", " ", currentSelection$text) ## remove double spaces
+# currentSelection$text <-   gsub("_", "", currentSelection$text) ## remove double spaces
+# currentSelection$text <-   gsub("-|–", "-", currentSelection$text) ## remove double spaces
+# currentSelection$text <-   gsub("[\"“‘«]", "\"", currentSelection$text) # reokace opening quote variations with std double "
+# currentSelection$text <-   gsub("[”’»]", "\"", currentSelection$text) # idem for closing
+# currentSelection$text <- gsub("[0-9]+", "", currentSelection$text)
+# currentSelection$text <- gsub(",", "", currentSelection$text)
+# currentSelection$text <- gsub("\\.", "", currentSelection$text)
+# currentSelection$text <- gsub("tco.*ing.", "", currentSelection$text)
+# 
+# for (i in 1:dim(currentSelection)[1]){
+# currentTweetContent <- currentSelection$text[i]
+# currrentTweetID <- currentSelection$status_id[i]
+# FullName <- paste(outputPathLevel3, currrentTweetID, ".txt", sep="")
+# writeChar(currentTweetContent, FullName)
+# }
+
+```
+
+
+
+# write.csv(FR_TML, paste(DailyPath, "-FR_TML.csv", sep=""))
+# write.csv(BE_TML, paste(DailyPath, "BE_TML.csv", sep=""))
+# write.csv(CA_TML, paste(DailyPath, "-CA_TML.csv", sep=""))
+# write.csv(CH_TML, paste(DailyPath, "-CH_TML.csv", sep=""))
+# write.csv(LX_TML, paste(DailyPath, "-LX_TML.csv", sep=""))
+# writeChar (as.character(FR_TML), paste("/R/NewsTMLS/A", YesterdayYMDString, "-FR_TML.csv", sep=""))
+# write.csv(BE_TML, paste("/R/NewsTMLS/A", YesterdayYMDString, "-BE_TML.csv", sep=""))
+# write.csv(CA_TML, paste("/R/NewsTMLS/A", YesterdayYMDString, "-CA_TML.csv", sep=""))
+# write.csv(CH_TML, paste("/R/NewsTMLS/A", YesterdayYMDString, "-CH_TML.csv", sep=""))
+# write.csv(LX_TML, paste("/R/NewsTMLS/A", YesterdayYMDString, "-LX_TML.csv", sep=""))
+
