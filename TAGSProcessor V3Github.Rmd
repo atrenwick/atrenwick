@@ -1,0 +1,213 @@
+---
+title: "TAGS V3"
+author: "Adam"
+date: "8/18/2021"
+output: console
+---
+
+```{r }
+library(beepr) ; library(readxl) ; library(dplyr) ; library(tm) ; library(textclean)
+
+thisPath <- "/R/TAGS_To_Import"
+ArchivePath <- "/R/TAGS_To_Import/CorrectArchivesWorking/"
+col_orderInit <- c("data.text", "data.lang", "data.id", "Source", "Search")
+col_orderFinal <- c("ProcTXT", "data.lang", "data.id", "Source", "Search")
+YMString <- format(Sys.Date(), "%Y-%m-") #-- was theDate
+RealDay <- as.integer(format(Sys.Date(), "%d")) -2
+    if ((RealDay <10)){
+      RealDay <- paste(0,RealDay, sep = "")}
+  Yesterday <- as.integer(format(Sys.Date(), "%d")) -1
+    if ((Yesterday <10)){
+Yesterday <- paste(0,Yesterday, sep = "")}
+DayChecker <- format(Sys.Date(), "%d")
+TodayYMString <- format(Sys.Date(), "%Y-%m-")
+YesterDate <- paste(TodayYMString, RealDay, sep = "")
+TodayYMDString <- format(Sys.Date(), "%Y-%m-%d") #-- was theDate
+YesterdayYMDString <- paste(TodayYMString, Yesterday, sep="")
+#YesterdayYMDString <- "2021-09-30"
+# YesterDate <- "2021-09"
+```
+
+## R ALLER + VENIRdeFalloir
+```{r }
+VenirFiles <- list.files(path=thisPath, pattern="*TAGS- VenirDeFalloir.xlsx", full.names=TRUE, recursive=FALSE)
+Stage10 <- ""
+
+for (i in 1:length(VenirFiles)){
+  Stage1.df <- read_excel(VenirFiles[i], sheet = "Archive")
+  Stage3.df <- Stage1.df[-c(2,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18)] ## numbers for standard import from tags
+  # Stage3.df$data.lang <- "FR"
+  # Stage3.df$Search <- "VenirDeFalloir"
+  # Stage3.df$Source <- "TAGS"
+  names(Stage3.df)[1] <- "data.id"
+  names(Stage3.df)[2] <- "data.text"
+  # Stage4.df <- Stage3.df[, col_orderInit]
+  # Stage5.df <- distinct(Stage4.df, .keep_all="FALSE") ## gets rid of some duplicates
+  Stage6.df <- Stage3.df[!duplicated(Stage3.df$data.id), ]
+  Stage7.df <- Stage6.df[!duplicated(Stage6.df$data.text), ]
+    Stage7.df$ProcTXT <- Stage7.df$data.text
+  Stage7.df$ProcTXT <- gsub("(f|ht)t(ps|p):.*(\\s|$)", "", Stage7.df$ProcTXT, ignore.case = TRUE)
+  Stage7.df$ProcTXT <- gsub("@[a-z,0-9,:punct:,_]*?\\s", "", Stage7.df$ProcTXT, ignore.case = TRUE)
+  Stage7.df$ProcTXT <- add_comma_space(Stage7.df$ProcTXT)
+  Stage7.df$ProcTXT <- replace_non_ascii(Stage7.df$ProcTXT)
+  Stage7.df$ProcTXT <- replace_hash(Stage7.df$ProcTXT)
+  Stage7.df$ProcTXT <- replace_html(Stage7.df$ProcTXT)
+  Stage7.df$ProcTXT <- replace_white(Stage7.df$ProcTXT)
+  beepr::beep()
+  Stage9.df <- Stage7.df[-c(2)]
+  Stage10 <- rbind(Stage9.df, Stage10)
+}
+beep(2)
+
+VenirOutFull <- paste(ArchivePath, YesterdayYMDString, "- VenirDeFalloirArchive.csv", sep="")
+##VenirOutFull <- paste(thisPath, "/", "2021-08-31", "-VenirDeFalloirArchive.csv", sep="")
+
+if (DayChecker =="02") {
+  write.csv(Stage10, VenirOutFull)
+  break} else {
+    ArchiveNameFoot <- "- VenirDeFalloirArchive.csv"
+##ArchiveName <- paste(ArchivePath, "2021-09-29", ArchiveNameFoot, sep = "")
+    ArchiveName <- paste(ArchivePath, YesterDate, ArchiveNameFoot, sep = "")
+    ArchiveIN <- read.csv(ArchiveName)
+    ArchiveIN <- ArchiveIN[-c(1)]
+    VenirOutFull <- paste(ArchivePath, "/", YesterdayYMDString,  "- VenirDeFalloirArchive.csv", sep="")
+##VenirOutFull <- paste(ArchivePath, "/", "2021-03-31",  ArchiveNameFoot, sep="")
+    ArchiveNewRaw <- rbind(ArchiveIN, Stage10)
+    ArchiveOut <- ArchiveNewRaw[!duplicated(ArchiveNewRaw$ProcTXT), ]
+    write.csv(ArchiveOut, VenirOutFull)
+  }
+rm(ArchiveIN, ArchiveName, ArchiveNameFoot, ArchiveNewRaw, ArchiveOut, Stage1.df, Stage3.df, Stage4.df, Stage5.df, Stage6.df, Stage7.df,Stage9.df, Stage10,VenirFiles, VenirOutFull)
+
+#################################################################################################################
+#################################################################################################################
+Allerfiles <- list.files(path=thisPath, pattern="*ALLER_pres.xlsx", full.names=TRUE, recursive=FALSE)
+Stage10 <- ""
+
+for (i in 1:length(Allerfiles)){
+  Stage1.df <- read_excel(Allerfiles[i], sheet = "Archive")
+  Stage3.df <- Stage1.df[-c(2,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18)] ## numbers for standard import from tags
+  # Stage3.df$data.lang <- "FR"
+  # Stage3.df$Search <- "Aller_Pres"
+  # Stage3.df$Source <- "TAGS"
+  names(Stage3.df)[1] <- "data.id"
+  names(Stage3.df)[2] <- "data.text"
+  # Stage4.df <- Stage3.df[, col_orderInit]
+  # Stage5.df <- distinct(Stage4.df, .keep_all="FALSE") ## gets rid of some duplicates
+  Stage6.df <- Stage3.df[!duplicated(Stage3.df$data.id), ]
+  Stage7.df <- Stage6.df[!duplicated(Stage6.df$data.text), ]
+  Stage7.df$ProcTXT <- Stage7.df$data.text
+  Stage7.df$ProcTXT <- gsub("(f|ht)t(ps|p):.*(\\s|$)", "", Stage7.df$ProcTXT, ignore.case = TRUE)
+  Stage7.df$ProcTXT <- gsub("@[a-z,0-9,:punct:,_]*?\\s", "", Stage7.df$ProcTXT, ignore.case = TRUE)
+  Stage7.df$ProcTXT <- add_comma_space(Stage7.df$ProcTXT)
+  Stage7.df$ProcTXT <- replace_non_ascii(Stage7.df$ProcTXT)
+  Stage7.df$ProcTXT <- replace_hash(Stage7.df$ProcTXT)
+  Stage7.df$ProcTXT <- replace_html(Stage7.df$ProcTXT)
+  Stage7.df$ProcTXT <- replace_white(Stage7.df$ProcTXT)
+  beepr::beep()
+  Stage9.df <- Stage7.df[-c(2)]
+  Stage10 <- rbind(Stage9.df, Stage10)
+}
+beep(2)
+
+AllerOutFull <- paste(ArchivePath,  YesterdayYMDString, "-ALLER_presArchive.csv", sep="")
+##AllerOutFull <- paste(thisPath, "/", "2021-09-30", "-ALLER_presArchive.csv", sep="")
+if (DayChecker =="02") {
+  write.csv(Stage10, AllerOutFull)
+  break} else {
+    ArchiveNameFoot <- "-ALLER_presArchive.csv"
+##ArchiveName <- paste(ArchivePath, "2021-09-29", ArchiveNameFoot, sep = "")
+    ArchiveName <- paste(ArchivePath, YesterDate, ArchiveNameFoot, sep = "")
+    ArchiveIN <- read.csv(ArchiveName)
+    ArchiveIN <- ArchiveIN[-c(1)]
+##AllerOutFull <- paste(ArchivePath, "/", "2021-08-31",  ArchiveNameFoot, sep="")
+    
+    ArchiveNewRaw <- rbind(ArchiveIN, Stage10)
+    ArchiveOut <- ArchiveNewRaw[!duplicated(ArchiveNewRaw$ProcTXT), ]
+    write.csv(ArchiveOut, AllerOutFull)
+    beep(2)
+  }    
+  
+rm(AllerOutFull, Allerfiles, ArchiveIN, ArchiveName, ArchiveNameFoot, ArchiveOut, ArchiveNewRaw, Stage1.df, Stage3.df, Stage4.df, Stage5.df, Stage6.df, Stage7.df,Stage9.df, Stage10)
+#################################################################################################################
+## AvoirPC
+fileA <- list.files(path=thisPath, pattern="*part1.xlsx", full.names=TRUE, recursive=FALSE)
+fileB <- list.files(path=thisPath, pattern="*part2.xlsx", full.names=TRUE, recursive=FALSE)
+AvoirFiles <- (c(fileA, fileB))
+Stage10 <- ""
+
+for (i in 1:length(AvoirFiles)){
+  Stage1.df <- read_excel(AvoirFiles[i], sheet = "Archive")
+  Stage3.df <- Stage1.df[-c(2,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18)] ## numbers for standard import from tags
+  # Stage3.df$data.lang <- "FR"
+  # Stage3.df$Search <- "AvoirPC"
+  # Stage3.df$Source <- "TAGS"
+  names(Stage3.df)[1] <- "data.id"
+  names(Stage3.df)[2] <- "data.text"
+  # Stage4.df <- Stage3.df[, col_orderInit]
+  # Stage5.df <- distinct(Stage4.df, .keep_all="FALSE") ## gets rid of some duplicates
+  Stage3.df <- Stage3.df[!duplicated(Stage3.df$data.id), ]
+  Stage7.df <- Stage3.df[!duplicated(Stage3.df$data.text), ]
+  Stage7.df$ProcTXT <- Stage7.df$data.text
+  Stage7.df$ProcTXT <- gsub("(f|ht)t(ps|p):.*(\\s|$)", "", Stage7.df$ProcTXT, ignore.case = TRUE)
+  Stage7.df$ProcTXT <- gsub("@[a-z,0-9,:punct:,_]*?\\s", "", Stage7.df$ProcTXT, ignore.case = TRUE)
+  Stage7.df$ProcTXT <- add_comma_space(Stage7.df$ProcTXT)
+  Stage7.df$ProcTXT <- replace_non_ascii(Stage7.df$ProcTXT)
+  Stage7.df$ProcTXT <- replace_hash(Stage7.df$ProcTXT)
+  Stage7.df$ProcTXT <- replace_html(Stage7.df$ProcTXT)
+  Stage7.df$ProcTXT <- replace_white(Stage7.df$ProcTXT)
+  beepr::beep()
+  
+  Stage9.df <- Stage7.df[-c(2)]
+  Stage10 <- rbind(Stage9.df, Stage10)
+}
+beep(2)
+
+    ArchiveNameFoot <- "-AvoirPCArchive.csv"
+    AvoirPCOutFull <- paste(ArchivePath, YesterdayYMDString, ArchiveNameFoot, sep="")
+    ##AvoirPCOutFull <- paste(thisPath, "/", "2021-08-31", "-AvoirPCArchive.csv", sep="")
+if (DayChecker =="02") {
+  write.csv(Stage10, AvoirPCOutFull)
+  break} else {
+    ArchiveName <- paste(ArchivePath, YesterDate, ArchiveNameFoot, sep = "")
+    ArchiveIN <- read.csv(ArchiveName)
+    ArchiveIN <- ArchiveIN[-c(1)]
+    AvoirPCOutFull <- paste(ArchivePath, YesterdayYMDString, ArchiveNameFoot, sep="")
+    ##AvoirPCOutFull <- paste(thisPath, "/", "2021-08-30", "-AvoirPCArchive.csv", sep="")
+    # ArchiveIN$data.id <- ""
+
+    ArchiveNewRaw <- rbind(ArchiveIN, Stage10)
+    ArchiveOut <- ArchiveNewRaw[!duplicated(ArchiveNewRaw$ProcTXT), ]
+    
+    write.csv(ArchiveOut, AvoirPCOutFull)
+    beep(3)
+    }
+rm(AvoirPCOutFull, AvoirFiles, ArchiveIN, ArchiveName, ArchiveNameFoot, ArchiveOut, ArchiveNewRaw, Stage1.df, Stage3.df, Stage4.df, Stage5.df, Stage6.df, Stage7.df,Stage9.df, Stage10, fileA, fileB)
+
+```
+
+
+## to run over a whole month in one go:
+
+```{r}
+# library(beepr) ; library(readxl) ; library(dplyr) ; library(tm) ; library(textclean)
+# SpecifiedYYYY_MM <- "2021-09"
+# MassArchive <-paste("/Volumes/CERLA Store/TweetTAGSArchive/",  sep="")
+# 
+# col_orderInit <- c("data.text", "data.lang", "data.id", "Source", "Search")
+# col_orderFinal <- c("ProcTXT", "data.lang", "data.id", "Source", "Search")
+# YMString <- format(Sys.Date(), "%Y-%m-") #-- was theDate
+# RealDay <- as.integer(format(Sys.Date(), "%d")) -2
+#     if ((RealDay <10)){
+#       RealDay <- paste(0,RealDay, sep = "")}
+#   Yesterday <- as.integer(format(Sys.Date(), "%d")) -1
+#     if ((Yesterday <10)){
+# Yesterday <- paste(0,Yesterday, sep = "")}
+# DayChecker <- format(Sys.Date(), "%d")
+# TodayYMString <- format(Sys.Date(), "%Y-%m-")
+# YesterDate <- paste(TodayYMString, RealDay, sep = "")
+# TodayYMDString <- format(Sys.Date(), "%Y-%m-%d") #-- was theDate
+# YesterdayYMDString <- paste(TodayYMString, Yesterday, sep="")
+# #YesterdayYMDString <- "2021-09-30"
+# # YesterDate <- "2021-09"
+
+```
