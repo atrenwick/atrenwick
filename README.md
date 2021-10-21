@@ -3,7 +3,7 @@
 - Linguistic data, you say? Tweets, PhD theses, articles in scientific journals, newspapers, webpages… 
 - Basically anywhere people use English or French to put their ideas into words
 - Particularly interested in words ending in -ING in French (with English or French verbs)
-- 🌱 I’m currently learning Python and Solidity…
+- 🌱 I’m currently learning Python, and Perl, and Solidity…
 - 📫 How to reach me : atrenfrance@gmail.com
 
 <!---
