@@ -4,7 +4,7 @@
 - Basically anywhere people use English or French to put their ideas into words
 - Particularly interested in words ending in -ING in French (with English or French verbs)
 - 🌱 I’m currently learning Python, and Perl, and Solidity…
-- 📫 How to reach me : atrenfrance@gmail.com
+- 📫 How to reach me : atrenfrance < at> gmail.com
 
 <!---
 atrenwick/atrenwick is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
